@@ -1,4 +1,3 @@
-from flask import Flask
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -12,66 +11,44 @@ class Cliente:
         self.email = email
         self.telefone = telefone
 
+@app.route('/clientes', methods=['POST'])
 def cadastrar_cliente():
-    nome = input("Nome: ")
-    endereco = input("Endereço: ")
-    email = input("Email: ")
-    telefone = input("Telefone: ")
+    nome = request.json['nome']
+    endereco = request.json['endereco']
+    email = request.json['email']
+    telefone = request.json['telefone']
     novo_cliente = Cliente(nome, endereco, email, telefone)
     clientes.append(novo_cliente)
-    print("Cliente cadastrado com sucesso!")
+    return jsonify({'message': 'Cliente cadastrado com sucesso!'})
 
-def exibir_cliente():
-    email = input("Email do cliente: ")
+@app.route('/clientes/<email>', methods=['GET'])
+def exibir_cliente(email):
     for cliente in clientes:
         if cliente.email == email:
-            print("Nome: ", cliente.nome)
-            print("Endereço: ", cliente.endereco)
-            print("Telefone: ", cliente.telefone)
-            return
-    print("Cliente não encontrado.")
+            return jsonify({
+                'nome': cliente.nome,
+                'endereco': cliente.endereco,
+                'telefone': cliente.telefone
+            })
+    return jsonify({'message': 'Cliente não encontrado.'})
 
-def atualizar_cliente():
-    email = input("Email do cliente: ")
+@app.route('/clientes/<email>', methods=['PUT'])
+def atualizar_cliente(email):
     for cliente in clientes:
         if cliente.email == email:
-            novo_nome = input("Novo nome: ")
-            novo_endereco = input("Novo endereço: ")
-            novo_telefone = input("Novo telefone: ")
-            cliente.nome = novo_nome
-            cliente.endereco = novo_endereco
-            cliente.telefone = novo_telefone
-            print("Cliente atualizado com sucesso!")
-            return
-    print("Cliente não encontrado.")
+            cliente.nome = request.json['nome']
+            cliente.endereco = request.json['endereco']
+            cliente.telefone = request.json['telefone']
+            return jsonify({'message': 'Cliente atualizado com sucesso!'})
+    return jsonify({'message': 'Cliente não encontrado.'})
 
-def excluir_cliente():
-    email = input("Email do cliente: ")
+@app.route('/clientes/<email>', methods=['DELETE'])
+def excluir_cliente(email):
     for cliente in clientes:
         if cliente.email == email:
             clientes.remove(cliente)
-            print("Cliente excluído com sucesso!")
-            return
-    print("Cliente não encontrado.")
+            return jsonify({'message': 'Cliente excluído com sucesso!'})
+    return jsonify({'message': 'Cliente não encontrado.'})
 
-while True:
-    print("1 - Cadastrar cliente")
-    print("2 - Exibir informações do cliente")
-    print("3 - Atualizar informações do cliente")
-    print("4 - Excluir cliente")
-    print("5 - Sair")
-
-    opcao = input("Opção: ")
-
-    if opcao == "1":
-        cadastrar_cliente()
-    elif opcao == "2":
-        exibir_cliente()
-    elif opcao == "3":
-        atualizar_cliente()
-    elif opcao == "4":
-        excluir_cliente()
-    elif opcao == "5":
-        break
-    else:
-        print("Opção inválida.")
+if __name__ == '__main__':
+    app.run()
